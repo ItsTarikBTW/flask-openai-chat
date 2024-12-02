@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Setup OpenAI API</title>
+    <script src="https://unpkg.com/alpinejs" defer></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div x-data="{
+        apiKey: '',
+        loading: false,
+        async submitKey() {
+            this.loading = true;
+            try {
+                const response = await fetch('/setup', {
+                    method: 'POST',
+                    body: new FormData(this.$refs.form)
+                });
+                if (response.ok) {
+                    window.location.href = '/';
+                }
+            } finally {
+                this.loading = false;
+            }
+        }
+    }" class="min-h-screen flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-md w-96">
+            <h1 class="text-2xl mb-6">Enter OpenAI API Key</h1>
+            <form x-ref="form" @submit.prevent="submitKey">
+                <input type="password" name="api_key" x-model="apiKey" 
+                    class="w-full p-2 border rounded mb-4" required>
+                <button type="submit" 
+                    class="w-full bg-blue-500 text-white p-2 rounded"
+                    :disabled="loading">
+                    <span x-show="!loading">Submit</span>
+                    <span x-show="loading">Loading...</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

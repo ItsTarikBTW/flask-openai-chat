@@ -1,0 +1,39 @@
+# Python-specific
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+env.bak/
+venv.bak/
+
+# Flask configuration files
+instance/
+.webassets-cache
+
+# Application files
+*.log
+*.sqlite3
+*.db
+
+# IDE specific files
+.vscode/
+*.sublime-workspace
+*.sublime-project
+.idea/
+*.iml
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Other files
+.DS_Store
+*.bak
+*.swp
+*.tmp
+
+# Secrets
+*.env
+*.env.local

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chat Interface</title>
+    <script src="https://unpkg.com/alpinejs" defer></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+      function uuidv4() {
+        return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+          (
+            c ^
+            (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
+          ).toString(16)
+        );
+      }
+    </script>
+  </head>
+  <body class="bg-gray-100 h-screen flex flex-col">
+    <div
+      x-data="{
+        message: '',
+        messages: [],
+        loading: false,
+        currentEventSource: null,
+
+        async sendMessage() {
+            if (!this.message.trim()) return;
+            
+            console.log('Sending message:', this.message); // Log outgoing message
+            
+            if (this.currentEventSource) {
+                console.log('Closing previous connection');
+                this.currentEventSource.close();
+            }
+            
+            const userMessage = this.message;
+            this.messages.push({ id: uuidv4(), role: 'user', content: userMessage });
+            this.message = '';
+            this.loading = true;
+            
+            let aiResponse = '';
+            const assistantIndex = this.messages.push({ 
+                id: uuidv4(), 
+                role: 'assistant', 
+                content: '' 
+            }) - 1;
+            
+            console.log('Opening connection for message:', userMessage);
+            this.currentEventSource = new EventSource(`/chat?message=${encodeURIComponent(userMessage)}`);
+
+            this.currentEventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                console.log('Received data:', data); // Log incoming data
+                
+                if (data.error) {
+                    console.error('Error received:', data.error);
+                    this.messages[assistantIndex].content = `Error: ${data.error}`;
+                    this.currentEventSource.close();
+                    this.loading = false;
+                    return;
+                }
+                if (data.content) {
+                    aiResponse += data.content;
+                    this.messages[assistantIndex].content = marked.parse(aiResponse);
+                }
+            };
+
+            this.currentEventSource.onerror = () => {
+                console.error('EventSource error occurred');
+                this.currentEventSource.close();
+                this.loading = false;
+                if (!aiResponse) {
+                    this.messages[assistantIndex].content = 'Error: Failed to get response';
+                }
+            };
+
+            this.currentEventSource.onclose = () => {
+                console.log('Connection closed');
+                this.loading = false;
+            };
+        }
+    }"
+      class="flex-1 px-12 pt-4 flex flex-col"
+    >
+      <div
+        class="bg-white rounded-lg shadow-md flex-1 flex flex-col overflow-hidden"
+      >
+        <!-- Chat messages container -->
+        <div class="flex-1 overflow-y-auto p-4 pb-28">
+          <template x-for="msg in messages" :key="msg.id">
+            <div
+              :class="{
+                        'mb-3 flex': true,
+                        'justify-end': msg.role === 'user',
+                        'justify-start': msg.role === 'assistant'
+                    }"
+            >
+              <div
+                :class="{
+                            'max-w-[80%] p-3 break-words shadow-sm': true,
+                            'bg-blue-500 text-white rounded-t-2xl rounded-bl-2xl rounded-br-sm': msg.role === 'user',
+                            'bg-gray-100 text-gray-800 rounded-t-2xl rounded-br-2xl rounded-bl-sm': msg.role === 'assistant'
+                        }"
+              >
+                <div
+                  x-html="msg.content"
+                  class="prose prose-sm max-w-none"
+                ></div>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- Fixed input form at bottom -->
+        <form
+          @submit.prevent="sendMessage"
+          class="fixed bottom-0 left-0 right-0 py-2 px-2 mx-12  bg-gradient-to-t from-white/40 shadow-md"
+        >
+          <div class="container max-w-4xl mx-auto flex gap-2 px-12">
+            <div class="flex-1 relative flex items-center">
+              <textarea
+                x-model="message"
+                placeholder="Type a message..."
+                @input="$el.style.height = '48px'; $el.style.height = $el.scrollHeight + 'px'"
+                @keydown.enter.prevent="
+                                if (!$event.shiftKey) {
+                                    sendMessage();
+                                } else {
+                                    $event.target.value += '\n';
+                                }
+                            "
+                class="w-full p-3 border rounded-full resize-none overflow-hidden focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 min-h-[48px] max-h-32"
+                :disabled="loading"
+                rows="1"
+              ></textarea>
+            </div>
+            <div class="flex items-center">
+              <button
+                type="submit"
+                class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full transition-colors h-[48px] flex items-center justify-center"
+                :disabled="loading"
+              >
+                <span x-show="!loading">Send</span>
+                <span x-show="loading" class="flex items-center gap-2">
+                  <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle
+                      class="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                      fill="none"
+                    />
+                    <path
+                      class="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  <span>Sending...</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
