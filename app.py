@@ -56,8 +56,8 @@ def chat():
 
 if __name__ == '__main__':
     try:
-        # Use port 5001 instead of default 5000 which might be blocked
-        app.run(host='127.0.0.1', port=5001, debug=True)
+        # Use port 5000 instead of default 5000 which might be blocked
+        app.run(host='127.0.0.1', port=5000, debug=True)
     except Exception as e:
         print(f"Error starting server: {e}")
         # Try alternate port if first fails
