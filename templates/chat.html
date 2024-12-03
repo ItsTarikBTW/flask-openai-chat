@@ -41,6 +41,30 @@
       .copy-button:hover {
         background: rgba(255, 255, 255, 0.2);
       }
+
+      .typing-animation {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .typing-animation::after {
+        content: '';
+        width: 4px;
+        height: 4px;
+        background: currentColor;
+        border-radius: 50%;
+        animation: typingDots 1.4s infinite;
+        box-shadow: 6px 0 0 currentColor, 12px 0 0 currentColor;
+        opacity: 0.5;
+      }
+
+      @keyframes typingDots {
+        0%, 20% { opacity: 0; }
+        40% { opacity: 0.4; }
+        60% { opacity: 0.8; }
+        80%, 100% { opacity: 1; }
+      }
     </style>
     <script>
       function uuidv4() {
@@ -179,10 +203,13 @@
                             'bg-gray-100 text-gray-800 rounded-t-2xl rounded-br-2xl rounded-bl-sm': msg.role === 'assistant'
                         }"
               >
-                <div
-                  x-html="msg.content"
-                  class="prose prose-sm max-w-none"
-                ></div>
+                <div class="prose prose-sm max-w-none">
+                  <template x-if="msg.role === 'assistant' && msg.content === '' && loading">
+                    <div class="typing-animation pe-4">Thinking</div>
+                  </template>
+                  <div x-show="!(msg.role === 'assistant' && msg.content === '' && loading)" 
+                       x-html="msg.content"></div>
+                </div>
               </div>
             </div>
           </template>
