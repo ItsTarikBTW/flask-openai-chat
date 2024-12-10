@@ -10,51 +10,26 @@ A real-time chat application using Flask and OpenAI's API with streaming respons
 - API key management
 
 ## Prerequisites
-- Python 3.8+
+- Docker
 - OpenAI API key
 
 ## Installation
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd flask-openai-chat
-```
-2. Create and activate virtual environment:
-```bash
-python -m venv venv
-.\venv\Scripts\activate
-```
-3. Install dependencies:
-```bash
-pip install flask python-dotenv openai markdown2
-```
-## Configuration
-1. Get your (OpenAI API)[https://platform.openai.com/api-keys] key from OpenAI Platform
-2. Run the application:
-```bash
-python app.py
-``` 
-3. Open the application in your browser:
-```bash
-http://127.0.0.1:5001/
-``` 
-4. Enter your OpenAI API key in the application settings
-## Project Structure
-```
-flask-openai-chat/
-├── static/
-├── templates/
-│   ├── chat.html
-│   └── setup.html
-├── modules/
-│   └── openai_handler.py
-├── app.py
-└── README.md
-```
+1. Pull the Docker image:
+    ```sh
+    docker pull khhamid/my-chatbot
+    ```
+
+2. Run the Docker container:
+    ```sh
+    docker run -d -p 5001:5001 --name flask-openai-chat khhamid/chatbot
+    ```
+
+3. Open your browser and navigate to `http://localhost:5001` to access the application.
 ## Usage
 
-- Visit the setup page to enter your OpenAI API key
+- Obtain an OpenAI API key from the [OpenAI website](https://beta.openai.com/signup/)
+- Enter your OpenAI API key on the homepage
 - Start chatting in the main interface
 - Use Shift+Enter for new lines in messages
 - Press Enter to send messages
